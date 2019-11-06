@@ -59,7 +59,7 @@ def choice_2d(a, cols: int, rows = None):
 
 def test_randint_2d(title: str, randint_fn):
     max = 1000
-    shape = (200, 300)
+    shape = (2000, 300)
     start = time.process_time()
     result = randint_fn(0, max, shape[0], shape[1])
     elapsed = time.process_time() - start
@@ -82,8 +82,8 @@ def test_randint_2d(title: str, randint_fn):
     assert(math.isclose(stdev, max / math.sqrt(12), abs_tol = 3))
 
 def test_choice_2d(title: str, choice_fn):
-    cols = 123
-    shape = (200, 300)
+    cols = 100
+    shape = (2000, 300)
     max = np.prod(shape)
     array = np.arange(max).reshape(shape)
     start = time.process_time()
