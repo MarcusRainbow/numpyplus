@@ -4,12 +4,14 @@
 #include <vector>
 #include <exception>
 #include <chrono>
+#include <unordered_set>
 using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;
 using std::chrono::milliseconds;
 
 using std::vector;
 using std::runtime_error;
+using std::unordered_set;
 
 int randint(int i)
 {
@@ -27,6 +29,40 @@ void reservoir_sampling_range(vector<int>& row, int low, int high)
         int j = randint(i);
         if (j < cols)
             row[j] = i + low;
+    }
+}
+
+void floyds_algorithm_on_range(vector<int>& row, int low, int high)
+{
+    const int range = high - low;
+    const int cols = row.size();
+    assert(range > cols);
+    unordered_set<int> found(cols);
+
+    for (auto element: row) {
+        int i = randint(range) + low;
+        // discard random numbers we have already used
+        while (!found.insert(i).second) {
+            i = randint(range) + low;
+        }
+        element = i;
+    }
+}
+
+void floyds_algorithm_from(vector<int>& row, const vector<int>& source)
+{
+    const int range = source.size();
+    const int cols = row.size();
+    assert(range > cols);
+    unordered_set<int> found(cols);
+
+    for (auto element: row) {
+        int i = randint(range);
+        // discard random numbers we have already used
+        while (!found.insert(i).second) {
+            i = randint(range);
+        }
+        element = source[i];
     }
 }
 
@@ -65,6 +101,7 @@ vector<vector<int>> randint_2d(int low, int high, int rows, int cols)
     result.resize(rows);
     for (auto& row: result) {
         row.resize(cols);
+        // floyds_algorithm_on_range(row, low, high);
         reservoir_sampling_range(row, low, high);
         fisher_yates(row);
     }
@@ -81,6 +118,7 @@ vector<vector<int>> choice_2d(const vector<vector<int>>& a, int cols)
     int i = 0;
     for (auto& row: result) {
         row.resize(cols);
+        // floyds_algorithm_from(row, a[i++]);
         reservoir_sampling_from(row, a[i++]);
         fisher_yates(row);
     }
@@ -94,6 +132,8 @@ void test_randint_2d()
     int cols = 300;
     
     auto start = high_resolution_clock::now();
+    for (int i = 0; i < 99; ++i)
+        auto result = randint_2d(0, max, rows, cols);
     auto result = randint_2d(0, max, rows, cols);
     auto elapsed = duration_cast<milliseconds>(high_resolution_clock::now() - start);
     
@@ -124,6 +164,8 @@ void test_choice_2d()
         }
     }
     auto start = high_resolution_clock::now();
+    for (int i = 0; i < 99; ++i)
+        auto result = choice_2d(array, cols);
     auto result = choice_2d(array, cols);
     auto elapsed = duration_cast<milliseconds>(high_resolution_clock::now() - start);
 
@@ -141,7 +183,6 @@ void test_choice_2d()
 
 int main(int argc, const char** argv)
 {
-    printf("hello world");
     try {
         test_randint_2d();
         test_choice_2d();
